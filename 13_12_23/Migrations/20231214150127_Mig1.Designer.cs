@@ -11,7 +11,7 @@ using _13_12_23.DAL;
 namespace _13_12_23.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20231213140449_Mig1")]
+    [Migration("20231214150127_Mig1")]
     partial class Mig1
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -33,7 +33,8 @@ namespace _13_12_23.Migrations
 
                     b.Property<string>("Name")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
 
                     b.HasKey("Id");
 
