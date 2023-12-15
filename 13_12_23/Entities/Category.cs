@@ -1,8 +1,9 @@
-﻿namespace _13_12_23.Entities
+﻿using _13_12_23.Entities.Base;
+
+namespace _13_12_23.Entities
 {
-    public class Category
+    public class Category :BaseEntity
     {
-        public int Id { get; set; }
         public string Name { get; set; }
     }
 }
