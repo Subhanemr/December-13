@@ -1,5 +1,4 @@
-﻿using _13_12_23.Entities;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 
 namespace _13_12_23.DAL
 {

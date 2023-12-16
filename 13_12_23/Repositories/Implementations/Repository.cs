@@ -1,60 +1,90 @@
-﻿using _13_12_23.Repositories.Interfaces;
+﻿using _13_12_23.Entities.Base;
+using _13_12_23.Repositories.Interfaces;
 using Microsoft.EntityFrameworkCore;
 using System.Linq.Expressions;
 
 namespace _13_12_23.Repositories.Implementations
 {
-    public class Repository : IRepository
+    public class Repository<T> : IRepository<T> where T : BaseEntity, new()
     {
+        private readonly DbSet<T> _dbSet;
         private readonly AppDbContext _context;
 
         public Repository(AppDbContext context)
         {
             _context = context;
+            _dbSet = context.Set<T>();
         }
 
-        public async Task AddAsync(Category category)
+        public async Task AddAsync(T entity)
         {
-            await _context.Categories.AddAsync(category);
+            await _dbSet.AddAsync(entity);
         }
 
-        public void Delete(Category category)
+        public void Delete(T entity)
         {
-            _context.Categories.Remove(category);
+            _dbSet.Remove(entity);
         }
 
-        public async Task<IQueryable<Category>> GetAllAsync(int page, int take, Expression<Func<Category, bool>>? expression = null, params string[] includes)
+        public IQueryable<T> GetAllAsync(Expression<Func<T, bool>>? expression = null, int skip = 0, int take = 0, bool IsTracking = true, params string[] includes)
         {
-            var query = _context.Categories.Skip((page - 1) * take).Take(take).AsQueryable();
-            if(expression != null)
-            {
-                query = query.Where(expression);
-            }
-            if(includes != null)
+            var query = _dbSet.AsQueryable();
+            if (expression != null) query = query.Where(expression);
+
+            if (skip != 0) query = query.Skip(skip);
+
+            if (take != 0) query = query.Take(take);
+
+            if (includes != null)
             {
                 for (int i = 0; i < includes.Length; i++)
                 {
                     query = query.Include(includes[i]);
                 }
             }
-            return query;
+            return IsTracking ? query : query.AsNoTracking();
         }
 
-        public async Task<Category> GetByIdAsync(int id)
+        public IQueryable<T> GetAllByOrderAsync(Expression<Func<T, bool>>? expression = null, Expression<Func<T, object>>? orderException = null, bool IsDescending = false, int skip = 0, int take = 0, bool IsTracking = true, params string[] includes)
         {
-            Category category = await _context.Categories.FirstOrDefaultAsync(x => x.Id == id);
-            
-            return category;
+            var query = _dbSet.AsQueryable();
+            if (expression != null) query = query.Where(expression);
+
+            if (orderException != null)
+            {
+                if (IsDescending) query = query.OrderByDescending(orderException);
+                else query = query.OrderBy(orderException);
+            }
+
+            if (skip != 0) query = query.Skip(skip);
+
+            if (take != 0) query = query.Take(take);
+
+            if (includes != null)
+            {
+                for (int i = 0; i < includes.Length; i++)
+                {
+                    query = query.Include(includes[i]);
+                }
+            }
+            return IsTracking ? query : query.AsNoTracking();
         }
 
-        public async Task SavaChanceAsync()
+        public async Task<T> GetByIdAsync(int id)
+        {
+            T entity = await _dbSet.FirstOrDefaultAsync(x => x.Id == id);
+            
+            return entity;
+        }
+
+        public async Task SaveChanceAsync()
         {
             await _context.SaveChangesAsync();
         }
 
-        public async void Update(Category category)
+        public async void Update(T entity)
         {
-            _context.Categories.Update(category);
+            _dbSet.Update(entity);
         }
     }
 }
